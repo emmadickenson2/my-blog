@@ -1,1 +1,1 @@
-# my-blog
+# Personal Blog - Linkedin Learning React Interface Project
