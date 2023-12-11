@@ -26,7 +26,7 @@ app.put('/api/articles/:name/upvote', async (req, res) => {
     const { name } = req.params;
     
     const client = new MongoClient('mongodb://127.0.0.1:27017');
-    await client.connect()
+    await client.connect();
 
     const db = client.db('react-blog-db');
     await db.collection('articles').updateOne({ name }, { 
@@ -35,21 +35,26 @@ app.put('/api/articles/:name/upvote', async (req, res) => {
     const article = await db.collection('articles').findOne( { name });
 
     if (article) {
-        article.upvotes += 1
         res.send(`The ${name} article now has ${article.upvotes} upvotes!!!`);
     } else {
         res.send('That article doesn\'t exist')
     }
 });
 
-app.post('/api/articles/:name/comments', (req, res) => {
+app.post('/api/articles/:name/comments', async (req, res) => {
     const { name } = req.params;
     const { postedBy, text } = req.body;
 
-    const article = articlesInfo.find(a => a.name == name);
+    const client = new MongoClient('mongodb://127.0.0.1:27017');
+    await client.connect();
 
-    if(article) {
-        article.comments.push({ postedBy, text });
+    const db = client.db('react-blog-db');
+    await db.collection('articles').updateOne({ name }, {
+        $push: { comments: {postedBy, text} }
+    });
+    const article = await db.collection('articles').findOne( { name });
+
+    if(article) { 
         res.send(article.comments);
     } else {
         res.send('That article doesn\'t exist!')
